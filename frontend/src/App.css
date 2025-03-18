@@ -1,0 +1,13 @@
+ body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.background {
+    min-height: 100vh; 
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat; /* Ensure no white space appears */
+}

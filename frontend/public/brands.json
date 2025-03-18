@@ -1,0 +1,23 @@
+{
+    "brands": [
+      "6Com", "A10", "Acacia", "Acer", "Adlink", "Akg", "Alcatel", "Allen Bradly", "Amd", "Apc", "Apple", 
+      "Arista", "Aruba Networks", "Aruba", "Asus", "Atgbics", "Avago", "Avaya", "Br", "Brilliant Dragon", "Broadcom", 
+      "Broacom", "Brocade", "Bton", "Centare", "Cftx", "China", "Chixian", "Cisco", "Cisco Meraki", "Meraki", 
+      "Colorful", "Compatible", "Crucial", "Dell", "Dell Precision", "Dilonh", "D-Link", "Eaton", "Ecovacs", "Emacs", 
+      "Emc", "Emerson", "Emulex", "Ennotool", "Epson", "Epyc", "Ercison", "Ericsson", "Etu", "Etu-Link", "Evga", 
+      "Extreme Networks", "F5", "Fb-Link", "Finisar", "Fortiap", "Fortinet", "Fs", "Fujifilm", "Fujitsu", "Fujistu", 
+      "Futurematrix", "Fwb", "Getforce", "Gigabyte", "H3C", "Heoztech", "Hikvision", "Hitachi", "Honeywall", 
+      "Hongmic", "Hpe", "Hp", "Huawei", "Hynix", "Hzgws", "Ibm", "Imation", "Infinol", "Innodisk", "Intel", 
+      "Intel/Altera", "Jabra", "Jfopt", "Juniper", "Junifer", "Keysco", "Kingston", "Kingstone", "Kioxia", "Kston", 
+      "Lanbo Flourishing", "Leadtek", "Lenovo", "Ligowave", "Lineage", "Link-Pp", "Linksays", "Logitech", "Lsi", 
+      "Maishilang", "Mean Well", "Mellanox", "Melllanox", "Micron", "Microsoft", "Mikrotik", "Moxa", "Msi", 
+      "Netapp", "Neutral", "Nexus", "Nokia", "Nufiber", "Nvidia", "Nvidia Mellanox", "Oceanstore", "Odm", "Oem", 
+      "Opengear", "Palo Alto", "Panasonic", "Peladn", "Plantronics", "Pny", "Poly", "Poly Blackwire", "Polycam", 
+      "Q-Logic", "Qsfoptical", "Quadro", "Realsea", "Rljt", "Rucks", "Ruckus", "Rucuks", "Ruijie", "Saikang", 
+      "Samsung", "Sandisk", "Sapphire", "Seagate", "Seed Development Ltd", "Seratlink", "Sibolan", "Skhynix", 
+      "Solidigm", "Sony", "Supermicro", "Synology", "Taiwan Ioi", "Tektronix", "Texas Instrument", "Toshiba", 
+      "Tp-Link", "Ubiquite", "Ubiquiti", "Ubiquiti Networks", "Uniview", "U-Ssc", "Vothoon", "Wd", "Wd Red", 
+      "Western Digital", "Xfx", "Yealink", "Yhdaa", "Yunvo", "Yx Fiber", "Yxfiber", "Zebra", "Zotac", "Zyxel"
+    ]
+  }
+  
