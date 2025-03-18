@@ -4,6 +4,7 @@ import ProductDetail from "./ProductDetail";
 import Sidebar from "../layout/Sidebar";
 import Navbar from "../layout/Navbar";
 import { productList, fetchBrands } from "../../apis/api";
+import { addToCart } from '../utils/cartUtils';
 
 const ProductList = () => {
   const { brand } = useParams();
@@ -45,6 +46,22 @@ const ProductList = () => {
 
     fetchProducts();
   }, [brand]); // Runs whenever brand changes
+
+  const handleAddToCart = (product) => {
+    // Create a properly structured product object from your API data
+    const productToAdd = {
+      id: product.product_id,       
+      name: product.part_number,   
+      price: parseFloat(product.price), 
+      description: product.short_description,
+      brand: product.brand.brand_name,
+      category: product.category.category_name,
+      quantity: 1 // Initial quantity for cart
+    };
+    
+    addToCart(productToAdd);
+    alert(`Added ${product.part_number} to cart!`);
+  };
 
   return (
     <>
@@ -97,7 +114,7 @@ const ProductList = () => {
                           onClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
-                            navigate(`/cart`, { state: { product } });
+                            handleAddToCart(product);
                           }}
                         >
                           Add to Cart

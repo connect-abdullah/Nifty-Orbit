@@ -1,6 +1,6 @@
 // const baseUrl = "http://localhost:8000/api";
 
-export const baseUrl = "https://rich-berries-judge.loca.lt";
+export const baseUrl = "https://quick-signs-bake.loca.lt";
 
 const headers = {
   headers: { "Content-Type": "application/json" },

@@ -19,9 +19,9 @@ const Login = () => {
 
     try {
       
-      // console.log(email, password);
+      console.log(email, password);
       const response = await loginUser(email, password);
-      // console.log(response);
+      console.log(response);
 
       if (response.status === 201) {
         // Store tokens in localStorage

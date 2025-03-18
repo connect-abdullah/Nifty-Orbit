@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { useLocation } from 'react-router-dom';
 import Footer from "../layout/Footer";
 import Navbar from "../layout/Navbar";
 import { FaPaypal } from "react-icons/fa";
 
-const stripePromise = loadStripe("pk_test_sample_key");
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_sample_key");
 
 const API_URL = 'http://localhost:8000/api'; // or your actual backend URL
 
@@ -123,24 +123,34 @@ const CheckoutForm = ({ formData, handleInputChange, loading, message, setLoadin
 
 const Payment = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [createAccount, setCreateAccount] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   
-  // Get product details from location state or set defaults
+  // Log the received state for debugging
+  console.log("Payment page received state:", location.state);
+  
+  // Check which mode we're in (full cart or single product)
+  const isFullCart = location.state?.isFullCart || false;
+  const cartItems = location.state?.cartItems || [];
+  const totalAmount = location.state?.totalAmount || 0;
+  
+  // For single product case
   const product = location.state?.product || {
     name: "No product selected",
     price: 0,
     image: "https://via.placeholder.com/50"
   };
 
-  // Calculate order details
-  const subtotal = product.price || 0;
+  // Calculate order details based on mode
+  const subtotal = isFullCart ? totalAmount : (product.price || 0);
   const shipping = 0;
   const taxRate = 0.20; // 20% tax rate
-  const tax = subtotal * taxRate;
-  const orderTotal = (subtotal + shipping + tax).toFixed(2);
-
+  const tax = parseFloat(subtotal) * taxRate;
+  const orderTotal = (parseFloat(subtotal) + shipping + tax).toFixed(2);
+  
+  // Update form data with the correct amount
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -154,38 +164,22 @@ const Payment = () => {
     cardNumber: '',
     cardExpiry: '',
     cardCVC: '',
-    productId: product.id || null,
-    productName: product.name,
     orderDetails: {
-      subtotal,
-      shipping,
-      tax,
-      total: orderTotal
+      isFullCart: isFullCart,
+      items: isFullCart ? cartItems : [product],
+      subtotal: parseFloat(subtotal),
+      shipping: shipping,
+      tax: tax,
+      total: parseFloat(orderTotal)
     }
   });
 
+  // Handle form data changes
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    
-    // Add input validation
-    switch(name) {
-      case 'cardNumber':
-        if (!/^\d*$/.test(value)) return; // Only numbers
-        break;
-      case 'cardCVC':
-        if (!/^\d*$/.test(value)) return; // Only numbers
-        break;
-      case 'cardExpiry':
-        if (!/^\d*\/?\d*$/.test(value)) return; // Numbers and one slash
-        break;
-      default:
-        break;
-    }
-
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   return (
@@ -306,7 +300,7 @@ const Payment = () => {
             <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
             <div className="flex justify-between py-2 border-b">
               <span>Cart Subtotal</span>
-              <span className="font-bold">£{subtotal.toFixed(2)}</span>
+              <span className="font-bold">£{parseFloat(subtotal).toFixed(2)}</span>
             </div>
             <div className="flex justify-between py-2 border-b">
               <span>Shipping</span>
@@ -320,13 +314,33 @@ const Payment = () => {
               <span>Order Total</span>
               <span>£{orderTotal}</span>
             </div>
-            <div className="flex items-center border p-4 rounded-lg mb-4">
-              <img src={product.image} alt={product.name} className="w-12 h-12 mr-4 object-cover" />
-              <div className="flex-grow">
-                <h4 className="font-semibold">{product.name}</h4>
-                <p className="text-gray-600">£{product.price?.toFixed(2) || '0.00'}</p>
+            
+            {/* Show either multiple items or single product */}
+            {isFullCart ? (
+              <div className="mt-4 max-h-60 overflow-y-auto">
+                <h4 className="font-semibold mb-2">Items ({cartItems.length})</h4>
+                {cartItems.map(item => (
+                  <div key={item.id} className="flex items-center border p-2 rounded-lg mb-2">
+                    <img src={item.image} alt={item.name} className="w-10 h-10 mr-2 object-cover" />
+                    <div className="flex-grow">
+                      <h4 className="text-sm font-semibold">{item.name}</h4>
+                      <div className="flex justify-between">
+                        <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
+                        <p className="text-xs">£{(item.price * item.quantity).toFixed(2)}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center border p-4 rounded-lg mb-4">
+                <img src={product.image} alt={product.name} className="w-12 h-12 mr-4 object-cover" />
+                <div className="flex-grow">
+                  <h4 className="font-semibold">{product.name}</h4>
+                  <p className="text-gray-600">£{product.price?.toFixed(2) || '0.00'}</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,58 +1,50 @@
-import  { useState } from "react";
-import router from "../../assets/Router.jpg";
-import switchimg from "../../assets/Switches 2.jpg";
+import { useState, useEffect } from "react";
+// These imports are not used in the code and can be removed
 import Navbar from "../layout/Navbar";
 import { useNavigate } from "react-router-dom";
 import Footer from "../layout/Footer";
+import { getCartItems, updateCartItemQuantity, removeFromCart, proceedToCheckout } from '../utils/cartUtils';
+
 const Cart = () => {
-  // Sample cart data
   const navigate = useNavigate();
+  const [cartItems, setCartItems] = useState([]);
 
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Product 1",
-      price: 100,
-      quantity: 1,
-      image: router, // Replace with actual image URL
-    },
-    {
-      id: 2,
-      name: "Product 2",
-      price: 150,
-      quantity: 1,
-      image: switchimg,
-    },
-  ]);
+  // Load cart items from cookies when component mounts
+  useEffect(() => {
+    const items = getCartItems();
+    setCartItems(items);
+  }, []);
 
-  // Handle quantity change (increment/decrement)
+  // Handle quantity change
   const handleQuantityChange = (id, action) => {
-    const updatedCart = cartItems.map((item) =>
-      item.id === id
-        ? {
-            ...item,
-            quantity:
-              action === "increment"
-                ? item.quantity + 1
-                : Math.max(1, item.quantity - 1),
-          }
-        : item
-    );
+    const item = cartItems.find(item => item.id === id);
+    if (!item) return;
+
+    const newQuantity = action === "increment" ? 
+      item.quantity + 1 : 
+      Math.max(1, item.quantity - 1);
+
+    const updatedCart = updateCartItemQuantity(id, newQuantity);
     setCartItems(updatedCart);
   };
 
-  // Handle delete item from cart
+  // Handle delete item
   const handleDelete = (id) => {
-    const updatedCart = cartItems.filter((item) => item.id !== id);
+    const updatedCart = removeFromCart(id);
     setCartItems(updatedCart);
   };
 
-  // Calculate total price
+  // Calculate total
   const calculateTotal = () => {
     return cartItems.reduce(
       (total, item) => total + item.price * item.quantity,
       0
-    );
+    ).toFixed(2);
+  };
+
+  // Add function to handle checkout for all items
+  const handleCheckoutAll = () => {
+    proceedToCheckout(navigate);
   };
 
   return (
@@ -63,27 +55,32 @@ const Cart = () => {
 
         <div className="space-y-5">
           {cartItems.length === 0 ? (
-            <p className="text-center text-xl">Your cart is empty!</p>
+            <div className="text-center">
+              <p className="text-xl text-white mb-4">Your cart is empty!</p>
+              <button 
+                onClick={() => navigate('/')}
+                className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700"
+              >
+                Continue Shopping
+              </button>
+            </div>
           ) : (
             cartItems.map((item) => (
               <div
                 key={item.id}
                 className="flex items-center justify-between p-4 border rounded-lg shadow-md bg-gray-300"
               >
-                {/* Product Image */}
                 <img
                   src={item.image}
                   alt={item.name}
                   className="w-20 h-20 object-cover rounded"
                 />
 
-                {/* Product Details */}
                 <div className="flex flex-col ml-4">
                   <span className="font-semibold">{item.name}</span>
                   <span className="text-gray-600">${item.price}</span>
                 </div>
 
-                {/* Quantity Controls */}
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => handleQuantityChange(item.id, "decrement")}
@@ -100,11 +97,16 @@ const Cart = () => {
                   </button>
                 </div>
 
-                {/* Delete Button */}
-                {/* Buttons Container */}
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => navigate('/payment')}
+                    onClick={() => navigate('/payment', { 
+                      state: { 
+                        product: {
+                          ...item,
+                          totalPrice: item.price * item.quantity
+                        }
+                      }
+                    })}
                     className="bg-purple-700 text-white px-4 py-2 rounded hover:bg-purple-600 transition"
                   >
                     Pay Now
@@ -122,11 +124,19 @@ const Cart = () => {
           )}
         </div>
 
-        <div className="mt-6 text-right">
-          <span className="font-semibold text-lg text-white">
-            Total: ${calculateTotal()}
-          </span>
-        </div>
+        {cartItems.length > 0 && (
+          <div className="mt-6 flex flex-col items-end">
+            <span className="font-semibold text-lg text-white mb-3">
+              Total: ${calculateTotal()}
+            </span>
+            <button
+              onClick={handleCheckoutAll}
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold transition duration-200"
+            >
+              Proceed with All Items
+            </button>
+          </div>
+        )}
       </div>
       <Footer/>
     </>
