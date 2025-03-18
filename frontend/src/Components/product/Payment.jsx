@@ -1,65 +1,193 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { useLocation } from 'react-router-dom';
 import Footer from "../layout/Footer";
 import Navbar from "../layout/Navbar";
 import { FaPaypal } from "react-icons/fa";
 
-const stripePromise = loadStripe("your-stripe-public-key"); // Replace with actual Stripe publishable key
+const stripePromise = loadStripe("pk_test_sample_key");
 
-const CheckoutForm = () => {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+const API_URL = 'http://localhost:8000/api'; // or your actual backend URL
 
+const CheckoutForm = ({ formData, handleInputChange, loading, message, setLoading, setMessage, orderTotal }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!stripe || !elements) return;
-
     setLoading(true);
     setMessage("");
 
-    const cardElement = elements.getElement(CardElement);
-    if (!cardElement) {
-      setMessage("Payment method is not available.");
-      setLoading(false);
-      return;
-    }
+    try {
+      // Validate form data
+      if (!formData.email || !formData.firstName || !formData.lastName || !formData.address) {
+        throw new Error("Please fill in all required fields");
+      }
 
-    const { error, paymentMethod } = await stripe.createPaymentMethod({
-      type: "card",
-      card: cardElement,
-    });
+      console.log('Attempting to send data:', formData);
 
-    if (error) {
-      setMessage(error.message);
-      setLoading(false);
-    } else {
-      setMessage("Payment successful! Your order is confirmed.");
+      const response = await fetch(`${API_URL}/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          // Add CORS headers
+          'Access-Control-Allow-Origin': '*',
+        },
+        credentials: 'include', // if using cookies
+        body: JSON.stringify(formData)
+      });
+
+      // Log the response status
+      console.log('Response status:', response.status);
+
+      if (!response.ok) {
+        // Try to get error message from response
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Server error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Success response:', data);
+      setMessage("Order submitted successfully!");
+    } catch (error) {
+      console.error('Detailed error:', error);
+      setMessage(error.message || "Connection to server failed. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <CardElement className="border p-2 rounded w-full" />
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Card Details
+        </label>
+        <input
+          type="text"
+          name="cardNumber"
+          placeholder="Card Number"
+          value={formData?.cardNumber}
+          onChange={handleInputChange}
+          className="border p-2 w-full mb-2 rounded"
+          required
+          maxLength="16"
+        />
+        <div className="grid grid-cols-2 gap-2">
+          <input
+            type="text"
+            name="cardExpiry"
+            placeholder="MM/YY"
+            value={formData?.cardExpiry}
+            onChange={handleInputChange}
+            className="border p-2 rounded"
+            required
+            maxLength="5"
+          />
+          <input
+            type="text"
+            name="cardCVC"
+            placeholder="CVC"
+            value={formData?.cardCVC}
+            onChange={handleInputChange}
+            className="border p-2 rounded"
+            required
+            maxLength="3"
+          />
+        </div>
+      </div>
+
       <button
         type="submit"
-        disabled={!stripe || loading}
-        className="w-full bg-purple-500 text-white p-3 rounded-lg font-bold text-lg"
+        disabled={loading}
+        className="w-full bg-purple-500 hover:bg-purple-600 text-white p-3 rounded-lg font-bold text-lg mb-2 transition duration-200"
       >
-        {loading ? "Processing..." : "Place Order"}
+        {loading ? "Processing..." : `Pay ${orderTotal}`}
       </button>
-      {message && <p className="text-red-500">{message}</p>}
-      <button className="w-full bg-purple-500 text-white p-3 rounded-lg font-bold text-lg flex items-center justify-center gap-2">
-  <FaPaypal className="text-2xl text-blue-300" /> Pay with PayPal
-</button>
+      
+      <button 
+        type="button"
+        className="w-full bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition duration-200"
+        onClick={() => console.log('PayPal payment clicked')}
+      >
+        <FaPaypal className="text-2xl" /> Pay with PayPal
+      </button>
+
+      {message && (
+        <p className={message.includes("success") ? "text-green-500" : "text-red-500"}>
+          {message}
+        </p>
+      )}
     </form>
   );
 };
 
 const Payment = () => {
+  const location = useLocation();
+  const [createAccount, setCreateAccount] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  
+  // Get product details from location state or set defaults
+  const product = location.state?.product || {
+    name: "No product selected",
+    price: 0,
+    image: "https://via.placeholder.com/50"
+  };
+
+  // Calculate order details
+  const subtotal = product.price || 0;
+  const shipping = 0;
+  const taxRate = 0.20; // 20% tax rate
+  const tax = subtotal * taxRate;
+  const orderTotal = (subtotal + shipping + tax).toFixed(2);
+
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    firstName: '',
+    lastName: '',
+    company: '',
+    address: '',
+    city: '',
+    state: '',
+    amount: orderTotal,
+    cardNumber: '',
+    cardExpiry: '',
+    cardCVC: '',
+    productId: product.id || null,
+    productName: product.name,
+    orderDetails: {
+      subtotal,
+      shipping,
+      tax,
+      total: orderTotal
+    }
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Add input validation
+    switch(name) {
+      case 'cardNumber':
+        if (!/^\d*$/.test(value)) return; // Only numbers
+        break;
+      case 'cardCVC':
+        if (!/^\d*$/.test(value)) return; // Only numbers
+        break;
+      case 'cardExpiry':
+        if (!/^\d*\/?\d*$/.test(value)) return; // Numbers and one slash
+        break;
+      default:
+        break;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   return (
     <>
       <Navbar />
@@ -69,25 +197,108 @@ const Payment = () => {
           {/* Shipping Address */}
           <div className="border p-4 rounded-lg">
             <h3 className="text-lg font-semibold mb-4">Shipping Address</h3>
-            <input type="email" placeholder="Email Address" className="border p-2 w-full mb-2 rounded" />
+            <input 
+              type="email" 
+              name="email" 
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="Email Address *" 
+              className="border p-2 w-full mb-2 rounded"
+              required
+            />
+            
             <div className="flex items-center mb-2">
-              <input type="checkbox" id="create-account" className="mr-2" />
+              <input 
+                type="checkbox" 
+                id="create-account" 
+                className="mr-2"
+                onChange={(e) => setCreateAccount(e.target.checked)}
+              />
               <label htmlFor="create-account">Create New Account</label>
             </div>
-            <input type="text" placeholder="First Name" className="border p-2 w-full mb-2 rounded" />
-            <input type="text" placeholder="Last Name" className="border p-2 w-full mb-2 rounded" />
-            <input type="text" placeholder="Company" className="border p-2 w-full mb-2 rounded" />
-            <input type="text" placeholder="Street Address" className="border p-2 w-full mb-2 rounded" />
-            <input type="text" placeholder="City" className="border p-2 w-full mb-2 rounded" />
-            <input type="text" placeholder="State/Province" className="border p-2 w-full mb-2 rounded" />
+
+            {createAccount && (
+              <input 
+                type="password" 
+                name="password" 
+                value={formData.password}
+                onChange={handleInputChange}
+                placeholder="Password *" 
+                className="border p-2 w-full mb-2 rounded"
+                required={createAccount}
+                minLength="6"
+              />
+            )}
+
+            {/* Add required attribute to necessary fields */}
+            <input 
+              type="text" 
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleInputChange}
+              placeholder="First Name *" 
+              className="border p-2 w-full mb-2 rounded"
+              required
+            />
+            {/* Add similar required attributes to other necessary fields */}
+            <input 
+              type="text" 
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleInputChange}
+              placeholder="Last Name *" 
+              className="border p-2 w-full mb-2 rounded"
+              required
+            />
+            <input 
+              type="text" 
+              name="company"
+              value={formData.company}
+              onChange={handleInputChange}
+              placeholder="Company (Optional)" 
+              className="border p-2 w-full mb-2 rounded"
+            />
+            <input 
+              type="text" 
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
+              placeholder="Street Address *" 
+              className="border p-2 w-full mb-2 rounded"
+              required
+            />
+            <input 
+              type="text" 
+              name="city"
+              value={formData.city}
+              onChange={handleInputChange}
+              placeholder="City *" 
+              className="border p-2 w-full mb-2 rounded"
+              required
+            />
+            <input 
+              type="text" 
+              name="state"
+              value={formData.state}
+              onChange={handleInputChange}
+              placeholder="State/Province *" 
+              className="border p-2 w-full mb-2 rounded"
+              required
+            />
           </div>
 
           {/* Payment Method */}
           <div className="border p-4 rounded-lg">
             <h3 className="text-lg font-semibold mb-4">Payment Method</h3>
-            <Elements stripe={stripePromise}>
-              <CheckoutForm />
-            </Elements>
+            <CheckoutForm 
+              formData={formData}
+              handleInputChange={handleInputChange}
+              loading={loading}
+              message={message}
+              setLoading={setLoading}
+              setMessage={setMessage}
+              orderTotal={`£${orderTotal}`}
+            />
           </div>
 
           {/* Order Summary */}
@@ -95,25 +306,25 @@ const Payment = () => {
             <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
             <div className="flex justify-between py-2 border-b">
               <span>Cart Subtotal</span>
-              <span className="font-bold">£45.00</span>
+              <span className="font-bold">£{subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between py-2 border-b">
               <span>Shipping</span>
-              <span>£0.00</span>
+              <span>£{shipping.toFixed(2)}</span>
             </div>
             <div className="flex justify-between py-2 border-b">
               <span>Tax</span>
-              <span className="font-bold">£9.00</span>
+              <span className="font-bold">£{tax.toFixed(2)}</span>
             </div>
             <div className="flex justify-between py-2 text-xl font-bold">
               <span>Order Total</span>
-              <span>£54.00</span>
+              <span>£{orderTotal}</span>
             </div>
             <div className="flex items-center border p-4 rounded-lg mb-4">
-              <img src="https://via.placeholder.com/50" alt="Product" className="w-12 h-12 mr-4" />
+              <img src={product.image} alt={product.name} className="w-12 h-12 mr-4 object-cover" />
               <div className="flex-grow">
-                <h4 className="font-semibold">PS-2651-1 - Cisco 650-Watt AC 240V Power Supply</h4>
-                <p className="text-gray-600">£45.00</p>
+                <h4 className="font-semibold">{product.name}</h4>
+                <p className="text-gray-600">£{product.price?.toFixed(2) || '0.00'}</p>
               </div>
             </div>
           </div>
