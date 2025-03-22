@@ -1,6 +1,6 @@
 // const baseUrl = "http://localhost:8000/api";
 
-export const baseUrl = "https://quick-signs-bake.loca.lt";
+export const baseUrl = "https://shiny-cats-smell.loca.lt";
 
 const headers = {
   headers: { "Content-Type": "application/json" },
@@ -8,7 +8,7 @@ const headers = {
 
 import axios from "axios";
 
-export const registerUser = async (formData) => {
+export const registerUser = async (formData) => {``
   const response = await axios.post(
     `${baseUrl}/users`,
     formData,
@@ -26,24 +26,33 @@ export const loginUser = async (email, password) => {
   return response;
 };
 
+// ProductListing
 export const fetchBrands = async () => {
   try {
     const response = await fetch(`${baseUrl}/brand`, headers);
     if (!response.ok) throw new Error("Failed to fetch brands");
-    return response.json();
+    return response;
   } catch (error) {
     console.error("Error fetching brands:", error);
     return [];
   }
 };
 
-export const productList = async (brandId) => {
+export const fetchBrandsCategories = async () => {
   try {
-    if (!brandId) {
-      throw new Error("Brand ID is undefined");
-    }
+    const response = await fetch(`${baseUrl}/brand/categories`, headers);
+    if (!response.ok) throw new Error("Failed to fetch brands");
+    return response;
+  } catch (error) {
+    console.error("Error fetching brands:", error);
+    return [];
+  }
+};
+
+export const productList = async () => {
+  try {
     const response = await fetch(
-      `${baseUrl}/products/filter?brandId=${brandId}`,
+      `${baseUrl}/products`,
       headers
     );
     return response;
@@ -52,3 +61,37 @@ export const productList = async (brandId) => {
     throw error;
   }
 };
+
+
+// Get Quote Api
+export const getQuote = async (data) => {
+  try {
+    const response = await axios.post(`${baseUrl}/quote`, data, headers);
+    return response;
+  } catch (error) {
+    console.error("Error sending quote:", error);
+    throw error;
+  }
+};
+
+// Contact Us Api
+export const contactUs = async (formData) => {
+  try {
+    const response = await axios.post(`${baseUrl}/contact`, formData, headers);
+    return response;
+  } catch (error) {
+    console.error("Error sending quote:", error);
+    throw error;
+  }
+};
+
+
+
+// Product Details Page
+// export const fetchProductById = async (id) => {
+//   const response = await fetch(`${baseUrl}/products/${id}`); 
+//   if (!response.ok) {
+//     throw new Error('Failed to fetch product by ID');
+//   }
+//   return response;
+// };

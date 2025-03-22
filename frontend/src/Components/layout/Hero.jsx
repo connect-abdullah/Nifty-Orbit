@@ -1,13 +1,11 @@
+import { useState, useEffect } from "react";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import Image1 from "../../assets/crouSAL1.jpg";
 import Image2 from "../../assets/carousal_img3.jpg";
 import Image3 from "../../assets/hardware.jpg";
-import Slider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import bgimg from "../../assets/Abeautifulsemi-transparentgalaxy background.webp";
-import PropTypes from "prop-types";
 
+
+// Define the image data
 const ImageList = [
   {
     id: 1,
@@ -21,93 +19,105 @@ const ImageList = [
     img: Image2,
     title: "Innovating Beyond Boundaries",
     description:
-      "Innovation knows no limits, and we embrace the challenge of pushing technology beyond conventional constraints. Through extensive research, dynamic problem-solving, ",
+      "Innovation knows no limits, and we embrace the challenge of pushing technology beyond conventional constraints.",
   },
   {
     id: 3,
     img: Image3,
     title: "Transforming Ideas into Reality",
     description:
-      "From conceptualization to execution, we specialize in transforming visionary ideas into tangible, high-impact technological solutions. Our expertise lies in bridging the gap.",
+      "From conceptualization to execution, we specialize in transforming visionary ideas into tangible, high-impact technological solutions.",
   },
 ];
 
-// Custom Arrows (hidden on small devices)
-const PrevArrow = ({ onClick }) => (
-  <button
-    className="mt-32 md:block absolute left-0 md:left-5 top-1/2 transform -translate-y-1/2 text-white bg-black/30 p-3 md:p-3 rounded-full z-20 hover:bg-white/30"
-    onClick={onClick}
-  >
-    <FaChevronLeft size={24} />
-  </button>
-);
-
-PrevArrow.propTypes = {
-  onClick: PropTypes.func.isRequired,
-};
-
-const NextArrow = ({ onClick }) => (
-  <button
-    className="mt-32 md:block absolute right-0 md:right-5 top-1/2 transform -translate-y-1/2 text-white bg-black/30 p-3 md:p-3 rounded-full z-20 hover:bg-white/20"
-    onClick={onClick}
-  >
-    <FaChevronRight size={24} />
-  </button>
-);
-
-NextArrow.propTypes = {
-  onClick: PropTypes.func.isRequired,
-};
-
-const Hero = () => {
-  const settings = {
-    dots: false,
-    arrows: true, // Arrows are enabled but hidden on small devices
-    infinite: true,
-    speed: 800,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 4000,
-    cssEase: "ease-in-out",
-    pauseOnHover: false,
-    pauseOnFocus: true,
-    prevArrow: <PrevArrow />,
-    nextArrow: <NextArrow />,
+function Hero() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  // Function to handle next slide
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev === ImageList.length - 1 ? 0 : prev + 1));
   };
-
+  
+  // Function to handle previous slide
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev === 0 ? ImageList.length - 1 : prev - 1));
+  };
+  
+  // Function to handle dot navigation
+  const goToSlide = (slideIndex) => {
+    setCurrentSlide(slideIndex);
+  };
+  
+  // Auto slide functionality
+  useEffect(() => {
+    const interval = setInterval(() => {
+      nextSlide();
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [currentSlide]);
+  
   return (
-    <div
-      className="relative overflow-hidden min-h-screen w-full flex justify-center items-center text-white"
-      style={{ backgroundImage: `url(${bgimg})`, backgroundSize: "cover", backgroundPosition: "center" }}
-    >
-      <div className="absolute inset-0 bg-black/10"></div>
-      <div className="p-4 relative z-10 w-full">
-        <Slider {...settings}>
-          {ImageList.map((data) => (
-            <div key={data.id} className="w-full flex items-center justify-center">
-              <div className="flex flex-col md:flex-row items-center justify-between px-4 md:px-20 py-10 w-full">
-                {/* Text Section */}
-                <div className="w-full md:w-1/2 text-left space-y-4 md:mb-20 md:ml-10">
-                  <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold drop-shadow-lg">{data.title}</h1>
-                  <p className="text-lg sm:text-lg drop-shadow-md">{data.description}</p>
-                </div>
-
-                {/* Image Section */}
-                <div className="w-full md:w-1/2 flex justify-center md:justify-end mt-8 md:mt-0">
-                  <img
-                    src={data.img}
-                    alt=""
-                    className="w-full max-w-sm md:max-w-3xl lg:max-w-xl object-contain rounded-lg border border-white/30 shadow-lg"
-                  />
-                </div>
-              </div>
+    <div className="relative w-full h-[92vh] overflow-hidden bg-black">
+      {/* {/ Left Arrow /} */}
+      <button
+        className="absolute  h-[100%] top-1/2 transform -translate-y-1/2 text-white bg-black/30 p-3  z-20 hover:bg-white/30"
+        onClick={prevSlide}
+      >
+        <FaChevronLeft size={24} />
+      </button>
+      
+      {/* {/ Slides /} */}
+      <div className="w-full h-full">
+        {ImageList.map((item, index) => (
+          <div 
+            key={item.id} 
+            className={`absolute top-0 left-0 w-full h-full transition-opacity duration-500 flex flex-col md:flex-row ${
+              currentSlide === index ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
+          >
+            {/* {/ Image Section (Left) /} */}
+            <div className="w-full md:w-1/2 h-full relative">
+              <img
+                src={item.img}
+                alt={item.title}
+                className="h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/50 "></div>
             </div>
-          ))}
-        </Slider>
+            
+            {/* {/ Content Section (Right) /} */}
+            <div className="w-full md:w-1/2 h-full bg-black flex flex-col justify-center items-start p-8 md:p-12">
+              <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">{item.title}</h2>
+              <p className="text-lg text-white/80 mb-8">{item.description}</p>
+          
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* {/ Right Arrow /} */}
+      <button
+        className="absolute right-1 h-[100%] top-1/2 transform -translate-y-1/2 text-white bg-black/30 p-3  z-20 hover:bg-white/20"
+        onClick={nextSlide}
+      >
+        <FaChevronRight size={24} />
+      </button>
+      
+      {/* {/ Dots Navigation /} */}
+      <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+        {ImageList.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goToSlide(index)}
+            className={`w-3 h-3 rounded-full ${
+              currentSlide === index ? "bg-white" : "bg-white/50"
+            }`}
+          />
+        ))}
       </div>
     </div>
   );
-};
+}
 
 export default Hero;

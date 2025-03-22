@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navbar from "./layout/Navbar";
 import Footer from "./layout/Footer";
+import {getQuote} from "../apis/api"
 
 export default function GetAQuote() {
   const [productCodes] = useState([
@@ -15,7 +16,14 @@ export default function GetAQuote() {
   const [inputValue, setInputValue] = useState("");
   const [filteredCodes, setFilteredCodes] = useState(productCodes);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [notInList, setNotInList] = useState("No");
+  const [condition, setCondition] = useState("New");
+  const [quantity, setQuantity] = useState("");
+  const [target_price, settarget_price] = useState("");
+  const [name, setName] = useState("");
+  const [phoneno, setphoneno] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState("Select");
 
   const handleInputChange = (e) => {
     const value = e.target.value;
@@ -33,6 +41,44 @@ export default function GetAQuote() {
     setShowDropdown(false);
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const data = {
+      email,
+      productcode: inputValue,
+      condition,
+      quantity,
+      status,
+      target_price,
+      name,
+      phoneno,
+      message,
+    };
+
+    try {
+      const response = await getQuote(data);
+      const result = await response;
+      console.log("Server Response:", result);
+      alert("Quote request sent successfully!");
+
+      // reset data after sending
+      setInputValue("");
+      setFilteredCodes(productCodes);
+      setShowDropdown(false);
+      setStatus("No");
+      setCondition("New");
+      setQuantity("");
+      settarget_price("");
+      setName("");
+      setphoneno("");
+      setEmail("");
+      setMessage("");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("An error occurred.");
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -41,7 +87,7 @@ export default function GetAQuote() {
           Fill Out The Form Below
         </h2>
         <div className="bg-gray-200 shadow-lg rounded-lg p-6 mt-6 w-full max-w-2xl">
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="relative">
               <label className="block text-gray-700 font-medium">
                 Enter your product codes for quote:
@@ -72,13 +118,18 @@ export default function GetAQuote() {
             <div className="flex space-x-4">
               <select
                 className="w-1/2 p-2 border rounded-md"
-                value={notInList}
-                onChange={(e) => setNotInList(e.target.value)}
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
               >
+                <option value="Select">Select status</option>
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
               </select>
-              <select className="w-1/2 p-2 border rounded-md">
+              <select
+                className="w-1/2 p-2 border rounded-md"
+                value={condition}
+                onChange={(e) => setCondition(e.target.value)}
+              >
                 <option>New</option>
                 <option>Used</option>
               </select>
@@ -88,33 +139,48 @@ export default function GetAQuote() {
                 type="number"
                 placeholder="Quantity"
                 className="w-1/2 p-2 border rounded-md"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
               />
               <input
                 type="text"
                 placeholder="Target Price"
                 className="w-1/2 p-2 border rounded-md"
+                value={target_price}
+                onChange={(e) => settarget_price(e.target.value)}
               />
             </div>
             <input
               type="text"
               placeholder="Name"
               className="w-full p-2 border rounded-md"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
             <input
               type="text"
               placeholder="Phone Number"
               className="w-full p-2 border rounded-md"
+              value={phoneno}
+              onChange={(e) => setphoneno(e.target.value)}
             />
             <input
               type="email"
               placeholder="Email Address"
               className="w-full p-2 border rounded-md"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
             <textarea
               placeholder="Message"
               className="w-full p-2 border rounded-md"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
             ></textarea>
-            <button className="w-full bg-purple-700 text-white py-2 rounded-md hover:bg-blue-800 transition">
+            <button
+              type="submit"
+              className="w-full bg-purple-700 text-white py-2 rounded-md hover:bg-blue-800 transition"
+            >
               Submit
             </button>
           </form>
@@ -134,7 +200,7 @@ export default function GetAQuote() {
           </a>
         </div>
       </div>
-      <Footer/>
+      <Footer />
     </>
   );
 }

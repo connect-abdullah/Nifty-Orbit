@@ -1,6 +1,7 @@
 import  { useState } from "react";
 import { loginUser } from "../../apis/api";
 import { useNavigate } from "react-router-dom"; // For redirection after login
+import { useAuth } from "./AuthContext";
 
 const Login = () => {
   console.log("Login");
@@ -10,12 +11,22 @@ const Login = () => {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate(); // For navigation
+  const { setUser } = useAuth(); // For admin Authenticatiom
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
     setLoading(true);
+``
+
+    // Example: fake login data
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+    // Perform your login API call here
+    // On success:
+    console.log("User with this email and password is successfully logged in", email, password)
+    setUser({ email }); // Store email globally
 
     try {
       
@@ -66,6 +77,7 @@ const Login = () => {
             <label className="block text-sm font-medium text-white">Email</label>
             <input
               type="email"
+              name="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 block w-full px-4 py-2 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-md  placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -79,6 +91,7 @@ const Login = () => {
             <label className="block text-sm font-medium text-white">Password</label>
             <input
               type="password"
+              name="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1 block w-full px-4 py-2 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-md  placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"

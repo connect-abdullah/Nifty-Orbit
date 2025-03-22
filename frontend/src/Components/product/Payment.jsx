@@ -18,13 +18,13 @@ const CheckoutForm = ({ formData, handleInputChange, loading, message, setLoadin
 
     try {
       // Validate form data
-      if (!formData.email || !formData.firstName || !formData.lastName || !formData.address) {
+      if (!formData?.email || !formData.firstName || !formData.lastName || !formData.address) {
         throw new Error("Please fill in all required fields");
       }
 
       console.log('Attempting to send data:', formData);
 
-      const response = await fetch(`${API_URL}/orders`, {
+      const response = await fetch(`https://jsonplaceholder.typicode.com/posts"`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -59,34 +59,37 @@ const Footer = () => {
         <div>
           <h3 className="text-xl font-bold mb-4">Connect With Us</h3>
           <div className="flex space-x-4 mb-4">
+            {/* Instagram */}
           <a
               href="https://www.instagram.com/your-instagram-account"
               className="text-white hover:text-purple-400"
             >
               <img
-                src = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCR0LLTqDd5WUncTAWmJI34sS0HZUsF8retg&s'
+                src = 'https://img.icons8.com/?size=100&id=Xy10Jcu1L2Su&format=png&color=000000'
                 alt="Instagram"
                 className="w-6 h-6"
               />
             </a>
+            {/* Facebook */}
+            <a
+              href="https://www.facebook.com/your-instagram-account"
+              className="text-white hover:text-purple-400"
+            >
+              <img
+                src="https://img.icons8.com/?size=100&id=118497&format=png&color=000000"
+                alt="Facebook"
+                className="w-6 h-6"
+              />
+            </a>
+            {/* X */}
             <a
               href="https://www.instagram.com/your-instagram-account"
               className="text-white hover:text-purple-400"
             >
               <img
-                src="https://store-images.s-microsoft.com/image/apps.30645.9007199266245907.cb06f1f9-9154-408e-b4ef-d19f2325893b.ac3b465e-4384-42a8-9142-901c0405e1bc"
-                alt="Instagram"
-                className="w-6 h-6"
-              />
-            </a>
-            <a
-              href="https://www.instagram.com/your-instagram-account"
-              className="text-white hover:text-purple-400"
-            >
-              <img
-                src="https://img.freepik.com/premium-vector/x-new-social-network-black-app-icon-twitter-rebranded-as-x-twitter-s-logo-was-changed_277909-568.jpg?semt=ais_hybrid"
-                alt="Instagram"
-                className="w-6 h-6"
+                src="https://img.icons8.com/?size=100&id=01GWmP9aUoPj&format=png&color=FFFFFF"
+                alt="Twitter"
+                className="w-6 h-6 "
               />
             </a>
           </div>
